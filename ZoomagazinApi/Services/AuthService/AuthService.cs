@@ -1,0 +1,43 @@
+﻿using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using ZoomagazinApi.Models;
+using System.Text;
+
+namespace ZoomagazinApi.Services.AuthService;
+
+public class AuthService : IAuthService
+{
+    private readonly IConfiguration _configuration;
+
+    public AuthService(IConfiguration configuration) =>
+        _configuration = configuration;
+
+    public string GenerateJwtToken(Account user)
+    {
+        JwtSettings jwtSettings = _configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? throw new ArgumentNullException("Get return null");
+
+        IEnumerable<Claim> claims = 
+        [
+            new(ClaimTypes.NameIdentifier, user.Username),
+            new(ClaimTypes.Email, user.Email),
+            new(ClaimTypes.MobilePhone, user.PhoneNumber),
+            new(ClaimTypes.Name, user.Username),
+            new(ClaimTypes.Role, user.Role),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        ];
+
+        SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(jwtSettings.Key));
+        SigningCredentials creds = new(key, SecurityAlgorithms.HmacSha256);
+
+        JwtSecurityToken token = new(
+            issuer: jwtSettings.Issuer,
+            audience: jwtSettings.Audience,
+            claims: claims,
+            expires: DateTime.Now.AddYears(100),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+}
