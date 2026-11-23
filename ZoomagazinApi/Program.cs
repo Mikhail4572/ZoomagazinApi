@@ -31,8 +31,7 @@ builder.Services.AddSwaggerGen(x =>
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-
-builder.Services.AddDbContext<MagazCoolDbContext>();
+builder.Services.AddDbContext<MagazCoolDbContext>(x => x.UseLazyLoadingProxies().UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 

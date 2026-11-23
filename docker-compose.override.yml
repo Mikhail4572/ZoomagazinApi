@@ -1,0 +1,25 @@
+services:
+  zoomagazinapi:
+    image: goydazov/zoocoolrep
+    container_name: zooApi
+    depends_on: 
+      - postgres_pipec
+    ports:
+      - "80:8080"
+    build:
+      context: ZoomagazinApi
+      dockerfile: Dockerfile
+  postgres_pipec:
+    image: postgres:15
+    container_name: postgres_pipec
+    restart: always
+    environment:
+      POSTGRES_DB: ZoomagazinDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    expose:
+      - "5432"
+    volumes:
+      - postgres_pipec_data:/var/lib/postgresql/data
+volumes:
+  postgres_pipec_data:
