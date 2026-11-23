@@ -21,39 +21,70 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+    //http://localhost:8080/api/Auth/check
+    [HttpGet("check")]
+    public async Task<IResult> Check()
+    {
+        Console.WriteLine($"\n\n{nameof(Check)} is caller\n\n");
+        return Results.Ok();
+    }
+
     [HttpPost("reg")]
     public async Task<IResult> Reg([FromBody] RegDto loginDto)
     {
-        if (await _context.Accounts.AnyAsync(x => x.Username == loginDto.Username))
+        try
         {
-            Results.Problem(
-                title: "Такой логин уже занят",
-                statusCode: StatusCodes.Status409Conflict
+            if (!ModelState.IsValid)
+            {
+                return Results.Problem(
+                    title: "данные не валидны",
+                    extensions: ModelState.Where(x => x.Value != null).ToDictionary(
+                       x => x.Key,
+                       x => (object?)x.Value),
+                    statusCode: StatusCodes.Status400BadRequest
+                );
+            }
+
+            if (await _context.Accounts.AnyAsync(x => x.Username == loginDto.Username))
+            {
+                Results.Problem(
+                    title: "Такой логин уже занят",
+                    statusCode: StatusCodes.Status409Conflict
+                );
+            }
+
+            if (await _context.Accounts.AnyAsync(x => x.Email == loginDto.Email))
+            {
+                Results.Problem(
+                    title: "Такая почта уже занята",
+                    statusCode: StatusCodes.Status409Conflict
+                );
+            }
+
+            Account account = new()
+            {
+                Username = loginDto.Username,
+                Email = loginDto.Email,
+                Password = loginDto.Password,
+                Role = (await _context.Accounts.AnyAsync()) ? "user" : "admin"
+            };
+
+
+            _context.Accounts.Add(account);
+            _context.SaveChanges();
+
+            string token = _authService.GenerateJwtToken(account);
+
+            return Results.Ok(token);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                title: ex.Message,
+                detail: ex.InnerException?.Message,
+                statusCode: StatusCodes.Status500InternalServerError
             );
         }
-
-        if (await _context.Accounts.AnyAsync(x => x.Email == loginDto.Email))
-        {
-            Results.Problem(
-                title: "Такая почта уже занята",
-                statusCode: StatusCodes.Status409Conflict
-            );
-        }
-
-        Account account = new()
-        {
-            Username = loginDto.Username,
-            Email = loginDto.Email,
-            Password = loginDto.Password,
-            Role = (await _context.Accounts.AnyAsync()) ? "user" : "admin"
-        };
-
-        _context.Accounts.Add(account);
-        _context.SaveChanges();
-
-        string token = _authService.GenerateJwtToken(account);
-
-        return Results.Ok(token);
     }
 
     [HttpPost("login")]

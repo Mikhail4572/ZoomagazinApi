@@ -12,7 +12,7 @@ using ZoomagazinApi.Models;
 namespace ZoomagazinApi.Migrations
 {
     [DbContext(typeof(MagazCoolDbContext))]
-    [Migration("20261123065413__initial")]
+    [Migration("20261123214013__initial")]
     partial class _initial
     {
         /// <inheritdoc />
