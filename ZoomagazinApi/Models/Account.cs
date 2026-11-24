@@ -2,10 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace ZoomagazinApi.Models;
 
-public partial class Account
+public class Account
 {
     public string Username { get; set; }
 
@@ -17,7 +18,9 @@ public partial class Account
 
     public string Role { get; set; }
 
+    [JsonIgnore]
     public virtual ICollection<Order> OrderBuyerUsernameNavigations { get; set; } = new List<Order>();
 
+    [JsonIgnore]
     public virtual ICollection<Order> OrderSallerLoginNavigations { get; set; } = new List<Order>();
 }

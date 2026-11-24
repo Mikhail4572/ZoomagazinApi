@@ -2,10 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace ZoomagazinApi.Models;
 
-public partial class Product
+public class Product
 {
     public int Id { get; set; }
 
@@ -17,5 +18,6 @@ public partial class Product
 
     public int Count { get; set; }
 
+    [JsonIgnore]
     public virtual ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
 }

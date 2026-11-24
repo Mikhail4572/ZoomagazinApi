@@ -48,6 +48,7 @@ public class OrderController : ControllerBase
         if (string.IsNullOrEmpty(username))
             return Results.StatusCode(404);
 
+
         if (addOrderDto.ProductsInOrders.Count == 0)
         {
             return Results.Problem(
@@ -71,7 +72,7 @@ public class OrderController : ControllerBase
             CreatedAt = DateTime.UtcNow,
             BuyerUsername = addOrderDto.BuyerUsername,
             OrderStatusId = 1,
-            SallerLogin = username
+            SallerUsername = username
         };
 
 

@@ -28,33 +28,23 @@ namespace ZoomagazinApi.Migrations
             modelBuilder.Entity("ZoomagazinApi.Models.Account", b =>
                 {
                     b.Property<string>("Username")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Password")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("text");
 
-                    b.HasKey("Username")
-                        .HasName("PK__Account__536C85E54E284830");
+                    b.HasKey("Username");
 
-                    b.ToTable("Account", (string)null);
+                    b.ToTable("Accounts");
                 });
 
             modelBuilder.Entity("ZoomagazinApi.Models.Order", b =>
@@ -66,34 +56,26 @@ namespace ZoomagazinApi.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BuyerUsername")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("OrderStatusId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1);
+                        .HasColumnType("integer");
 
-                    b.Property<string>("SallerLogin")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                    b.Property<string>("SallerUsername")
+                        .HasColumnType("text");
 
-                    b.HasKey("Id")
-                        .HasName("PK__Order__3214EC07B88BE3E0");
+                    b.HasKey("Id");
 
                     b.HasIndex("BuyerUsername");
 
                     b.HasIndex("OrderStatusId");
 
-                    b.HasIndex("SallerLogin");
+                    b.HasIndex("SallerUsername");
 
-                    b.ToTable("Order", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("ZoomagazinApi.Models.OrderProduct", b =>
@@ -107,12 +89,11 @@ namespace ZoomagazinApi.Migrations
                     b.Property<int>("Count")
                         .HasColumnType("integer");
 
-                    b.HasKey("ProductId", "OrderId")
-                        .HasName("PK__OrderPro__5835C371D42AD57B");
+                    b.HasKey("ProductId", "OrderId");
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderProduct", (string)null);
+                    b.ToTable("OrderProducts");
                 });
 
             modelBuilder.Entity("ZoomagazinApi.Models.OrderStatus", b =>
@@ -124,14 +105,11 @@ namespace ZoomagazinApi.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
 
-                    b.HasKey("Id")
-                        .HasName("PK__OrderSta__3214EC079B7B3087");
+                    b.HasKey("Id");
 
-                    b.ToTable("OrderStatus", (string)null);
+                    b.ToTable("OrderStatuses");
                 });
 
             modelBuilder.Entity("ZoomagazinApi.Models.Product", b =>
@@ -149,43 +127,37 @@ namespace ZoomagazinApi.Migrations
                         .HasColumnType("double precision");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("money");
+                        .HasColumnType("numeric");
 
-                    b.HasKey("Id")
-                        .HasName("PK__Product__3214EC07F6B6FD52");
+                    b.HasKey("Id");
 
-                    b.ToTable("Product", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("ZoomagazinApi.Models.Order", b =>
                 {
-                    b.HasOne("ZoomagazinApi.Models.Account", "BuyerUsernameNavigation")
+                    b.HasOne("ZoomagazinApi.Models.Account", "Buyer")
                         .WithMany("OrderBuyerUsernameNavigations")
-                        .HasForeignKey("BuyerUsername")
-                        .HasConstraintName("FK__Order__BuyerUser__534D60F1");
+                        .HasForeignKey("BuyerUsername");
 
                     b.HasOne("ZoomagazinApi.Models.OrderStatus", "OrderStatus")
                         .WithMany("Orders")
                         .HasForeignKey("OrderStatusId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Order__OrderStat__52593CB8");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("ZoomagazinApi.Models.Account", "SallerLoginNavigation")
+                    b.HasOne("ZoomagazinApi.Models.Account", "Saller")
                         .WithMany("OrderSallerLoginNavigations")
-                        .HasForeignKey("SallerLogin")
-                        .IsRequired()
-                        .HasConstraintName("FK__Order__SallerLog__5441852A");
+                        .HasForeignKey("SallerUsername");
 
-                    b.Navigation("BuyerUsernameNavigation");
+                    b.Navigation("Buyer");
 
                     b.Navigation("OrderStatus");
 
-                    b.Navigation("SallerLoginNavigation");
+                    b.Navigation("Saller");
                 });
 
             modelBuilder.Entity("ZoomagazinApi.Models.OrderProduct", b =>
@@ -193,14 +165,14 @@ namespace ZoomagazinApi.Migrations
                     b.HasOne("ZoomagazinApi.Models.Order", "Order")
                         .WithMany("OrderProducts")
                         .HasForeignKey("OrderId")
-                        .IsRequired()
-                        .HasConstraintName("FK__OrderProd__Order__5812160E");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ZoomagazinApi.Models.Product", "Product")
                         .WithMany("OrderProducts")
                         .HasForeignKey("ProductId")
-                        .IsRequired()
-                        .HasConstraintName("FK__OrderProd__Produ__571DF1D5");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Order");
 

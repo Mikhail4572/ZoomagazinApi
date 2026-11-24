@@ -2,14 +2,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace ZoomagazinApi.Models;
 
-public partial class OrderStatus
+public class OrderStatus
 {
     public int Id { get; set; }
 
     public string Name { get; set; }
 
+    [JsonIgnore]
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }

@@ -8,10 +8,6 @@ namespace ZoomagazinApi.Models;
 
 public partial class MagazCoolDbContext : DbContext
 {
-    public MagazCoolDbContext()
-    {
-    }
-
     public MagazCoolDbContext(DbContextOptions<MagazCoolDbContext> options)
         : base(options)
     {
@@ -35,99 +31,135 @@ public partial class MagazCoolDbContext : DbContext
     */
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
         modelBuilder.Entity<Account>(entity =>
-        {
-            entity.HasKey(e => e.Username).HasName("PK__Account__536C85E54E284830");
-
-            entity.ToTable("Account");
-
-            entity.Property(e => e.Username).HasMaxLength(200);
-            entity.Property(e => e.Email)
-                .IsRequired()
-                .HasMaxLength(100);
-            entity.Property(e => e.Password)
-                .IsRequired()
-                .HasMaxLength(200);
-            entity.Property(e => e.PhoneNumber)
-                .IsRequired()
-                .HasMaxLength(20);
-            entity.Property(e => e.Role)
-                .IsRequired()
-                .HasMaxLength(200);
-        });
+            entity.HasKey(e => e.Username));
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Order__3214EC07B88BE3E0");
+            entity.HasKey(e => e.Id);
 
-            entity.ToTable("Order");
+            entity.HasOne(x => x.Buyer)
+            .WithMany(x => x.OrderBuyerUsernameNavigations)
+            .HasForeignKey(x => x.BuyerUsername);
 
-            entity.Property(e => e.BuyerUsername).HasMaxLength(200);
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.OrderStatusId).HasDefaultValue(1);
-            entity.Property(e => e.SallerLogin)
-                .IsRequired()
-                .HasMaxLength(200);
-
-            entity.HasOne(d => d.BuyerUsernameNavigation).WithMany(p => p.OrderBuyerUsernameNavigations)
-                .HasForeignKey(d => d.BuyerUsername)
-                .HasConstraintName("FK__Order__BuyerUser__534D60F1");
+            entity.HasOne(x => x.Saller)
+                .WithMany(x => x.OrderSallerLoginNavigations)
+                .HasForeignKey(x => x.SallerUsername);
 
             entity.HasOne(d => d.OrderStatus).WithMany(p => p.Orders)
-                .HasForeignKey(d => d.OrderStatusId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Order__OrderStat__52593CB8");
-
-            entity.HasOne(d => d.SallerLoginNavigation).WithMany(p => p.OrderSallerLoginNavigations)
-                .HasForeignKey(d => d.SallerLogin)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Order__SallerLog__5441852A");
+                .HasForeignKey(d => d.OrderStatusId);
         });
 
         modelBuilder.Entity<OrderProduct>(entity =>
         {
-            entity.HasKey(e => new { e.ProductId, e.OrderId }).HasName("PK__OrderPro__5835C371D42AD57B");
+            entity.HasKey(e => new { e.ProductId, e.OrderId });
 
-            entity.ToTable("OrderProduct");
+            entity.HasOne(x => x.Product)
+            .WithMany(x => x.OrderProducts)
+            .HasForeignKey(x => x.ProductId);
 
-            entity.HasOne(d => d.Order).WithMany(p => p.OrderProducts)
-                .HasForeignKey(d => d.OrderId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OrderProd__Order__5812160E");
-
-            entity.HasOne(d => d.Product).WithMany(p => p.OrderProducts)
-                .HasForeignKey(d => d.ProductId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OrderProd__Produ__571DF1D5");
+            entity.HasOne(x => x.Order)
+            .WithMany(x => x.OrderProducts)
+            .HasForeignKey(x => x.OrderId);
         });
 
-        modelBuilder.Entity<OrderStatus>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__OrderSta__3214EC079B7B3087");
+        base.OnModelCreating(modelBuilder);
 
-            entity.ToTable("OrderStatus");
+        //---------------------------------------------------------------------
+        //modelBuilder.Entity<Account>(entity =>
+        //{
+        //    entity.HasKey(e => e.Username).HasName("PK__Account__536C85E54E284830");
 
-            entity.Property(e => e.Name)
-                .IsRequired()
-                .HasMaxLength(100);
-        });
+        //    entity.ToTable("Account");
 
-        modelBuilder.Entity<Product>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Product__3214EC07F6B6FD52");
+        //    entity.Property(e => e.Username).HasMaxLength(200);
+        //    entity.Property(e => e.Email)
+        //        .IsRequired()
+        //        .HasMaxLength(100);
+        //    entity.Property(e => e.Password)
+        //        .IsRequired()
+        //        .HasMaxLength(200);
+        //    entity.Property(e => e.PhoneNumber)
+        //        .IsRequired()
+        //        .HasMaxLength(20);
+        //    entity.Property(e => e.Role)
+        //        .IsRequired()
+        //        .HasMaxLength(200);
+        //});
 
-            entity.ToTable("Product");
+        //modelBuilder.Entity<Order>(entity =>
+        //{
+        //    entity.HasKey(e => e.Id).HasName("PK__Order__3214EC07B88BE3E0");
 
-            entity.Property(e => e.Name)
-                .IsRequired()
-                .HasMaxLength(100);
-            entity.Property(e => e.Price).HasColumnType("money");
-        });
+        //    entity.ToTable("Order");
 
-        OnModelCreatingPartial(modelBuilder);
+        //    entity.Property(e => e.BuyerUsername).HasMaxLength(200);
+        //    entity.Property(e => e.CreatedAt)
+        //        .HasDefaultValueSql("(getdate())")
+        //        .HasColumnType("datetime");
+        //    entity.Property(e => e.OrderStatusId).HasDefaultValue(1);
+        //    entity.Property(e => e.SallerLogin)
+        //        .IsRequired()
+        //        .HasMaxLength(200);
+
+        //    entity.HasOne(d => d.BuyerUsernameNavigation).WithMany(p => p.OrderBuyerUsernameNavigations)
+        //        .HasForeignKey(d => d.BuyerUsername)
+        //        .HasConstraintName("FK__Order__BuyerUser__534D60F1");
+
+        //    entity.HasOne(d => d.OrderStatus).WithMany(p => p.Orders)
+        //        .HasForeignKey(d => d.OrderStatusId)
+        //        .OnDelete(DeleteBehavior.ClientSetNull)
+        //        .HasConstraintName("FK__Order__OrderStat__52593CB8");
+
+        //    entity.HasOne(d => d.SallerLoginNavigation).WithMany(p => p.OrderSallerLoginNavigations)
+        //        .HasForeignKey(d => d.SallerLogin)
+        //        .OnDelete(DeleteBehavior.ClientSetNull)
+        //        .HasConstraintName("FK__Order__SallerLog__5441852A");
+        //});
+
+        //modelBuilder.Entity<OrderProduct>(entity =>
+        //{
+        //    entity.HasKey(e => new { e.ProductId, e.OrderId }).HasName("PK__OrderPro__5835C371D42AD57B");
+
+        //    entity.ToTable("OrderProduct");
+
+        //    entity.HasOne(d => d.Order).WithMany(p => p.OrderProducts)
+        //        .HasForeignKey(d => d.OrderId)
+        //        .OnDelete(DeleteBehavior.ClientSetNull)
+        //        .HasConstraintName("FK__OrderProd__Order__5812160E");
+
+        //    entity.HasOne(d => d.Product).WithMany(p => p.OrderProducts)
+        //        .HasForeignKey(d => d.ProductId)
+        //        .OnDelete(DeleteBehavior.ClientSetNull)
+        //        .HasConstraintName("FK__OrderProd__Produ__571DF1D5");
+        //});
+
+        //modelBuilder.Entity<OrderStatus>(entity =>
+        //{
+        //    entity.HasKey(e => e.Id).HasName("PK__OrderSta__3214EC079B7B3087");
+
+        //    entity.ToTable("OrderStatus");
+
+        //    entity.Property(e => e.Name)
+        //        .IsRequired()
+        //        .HasMaxLength(100);
+        //});
+
+        //modelBuilder.Entity<Product>(entity =>
+        //{
+        //    entity.HasKey(e => e.Id).HasName("PK__Product__3214EC07F6B6FD52");
+
+        //    entity.ToTable("Product");
+
+        //    entity.Property(e => e.Name)
+        //        .IsRequired()
+        //        .HasMaxLength(100);
+        //    entity.Property(e => e.Price).HasColumnType("money");
+        //});
+
+        //OnModelCreatingPartial(modelBuilder);
     }
 
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+    //  partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

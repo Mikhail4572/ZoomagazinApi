@@ -24,27 +24,26 @@ public class AuthController : ControllerBase
     //http://localhost:8080/api/Auth/check
     [HttpGet("check")]
     public async Task<IResult> Check()
-    {
-        Console.WriteLine($"\n\n{nameof(Check)} is caller\n\n");
+    {     
         return Results.Ok();
     }
 
     [HttpPost("reg")]
     public async Task<IResult> Reg([FromBody] RegDto loginDto)
     {
+        if (!ModelState.IsValid)
+        {
+            return Results.Problem(
+                title: "данные не валидны",
+                extensions: ModelState.Where(x => x.Value != null).ToDictionary(
+                   x => x.Key,
+                   x => (object?)x.Value),
+                statusCode: StatusCodes.Status400BadRequest
+            );
+        }
+
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return Results.Problem(
-                    title: "данные не валидны",
-                    extensions: ModelState.Where(x => x.Value != null).ToDictionary(
-                       x => x.Key,
-                       x => (object?)x.Value),
-                    statusCode: StatusCodes.Status400BadRequest
-                );
-            }
-
             if (await _context.Accounts.AnyAsync(x => x.Username == loginDto.Username))
             {
                 Results.Problem(
@@ -66,9 +65,9 @@ public class AuthController : ControllerBase
                 Username = loginDto.Username,
                 Email = loginDto.Email,
                 Password = loginDto.Password,
+                PhoneNumber = loginDto.PhoneNumber,
                 Role = (await _context.Accounts.AnyAsync()) ? "user" : "admin"
             };
-
 
             _context.Accounts.Add(account);
             _context.SaveChanges();

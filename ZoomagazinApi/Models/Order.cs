@@ -2,26 +2,31 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace ZoomagazinApi.Models;
 
-public partial class Order
+public class Order
 {
     public int Id { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
-    public string BuyerUsername { get; set; }
+    public string? BuyerUsername { get; set; }
 
-    public string SallerLogin { get; set; }
+    public string? SallerUsername { get; set; }
 
     public int OrderStatusId { get; set; }
 
-    public virtual Account BuyerUsernameNavigation { get; set; }
+    [JsonIgnore]
+    public virtual Account Buyer { get; set; }
 
+    [JsonIgnore]
     public virtual ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
 
+    [JsonIgnore]
     public virtual OrderStatus OrderStatus { get; set; }
 
-    public virtual Account SallerLoginNavigation { get; set; }
+    [JsonIgnore]
+    public virtual Account Saller { get; set; }
 }
