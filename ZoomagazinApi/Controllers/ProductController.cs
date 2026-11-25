@@ -20,7 +20,14 @@ public class ProductController : ControllerBase
     [HttpGet("getAll")]
     public async Task<IResult> GetProducts()
     {
-        var products = _context.Products.ToList();
+        var products = _context.Products.Select(x => new
+        {
+            x.Id,
+            x.Name,
+            Price = x.Price - (x.Price / 100 * ((decimal)x.Discount)),
+            x.Count
+        }).ToList();
+
         return Results.Ok(products);
     }
 

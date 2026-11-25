@@ -26,7 +26,17 @@ public class OrderController : ControllerBase
         if (string.IsNullOrEmpty(username))
             return Results.StatusCode(404);
 
-        var orders = _context.Orders.Where(x => x.BuyerUsername == username).ToList();
+        var orders = _context.Orders.Where(x => x.BuyerUsername == username).Select(x => new
+        {
+            OrderId = x.Id,
+            BuyerUsername = x.BuyerUsername,
+            SallerUsername = x.SallerUsername,
+            ProductsInOrder = x.OrderProducts.Select(y => new
+            {
+                Count = y.Count,
+                Product = y.Product,
+            }).ToList()
+        }).ToList();
 
         return Results.Ok(orders);
     }
@@ -35,13 +45,88 @@ public class OrderController : ControllerBase
     [Authorize(Roles = "admin")]
     public async Task<IResult> GetAllOrders()
     {
-        var orders = _context.Orders.ToList();
+        var orders = _context.Orders.Select(x => new 
+        {
+            OrderId = x.Id,
+            BuyerUsername = x.BuyerUsername,
+            SallerUsername = x.SallerUsername,
+            ProductsInOrder = x.OrderProducts.Select(y => new 
+            {
+                Count = y.Count,
+                Product = y.Product,
+            }).ToList()
+        }).ToList();
 
         return Results.Ok(orders);
     }
 
     [HttpPost("add")]
-    public async Task<IResult> CreateOrder([FromBody] AddOrderDto addOrderDto)
+    public async Task<IResult> CreateOrderForUser([FromBody] List<ProductsInOrderDto> productsInOrder)
+    {
+        var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(username))
+            return Results.StatusCode(404);
+
+        if (productsInOrder.Count == 0)
+        {
+            return Results.Problem(
+                title: "пустой заказ",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var ids = productsInOrder.Select(x => x.ProductId);
+
+        bool flag = _context.Products.Count(x => ids.Contains(x.Id)) == ids.Count();
+
+        if (!flag)
+        {
+            return Results.Problem(
+                title: "Один или более продуктов из заказа не найдены",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        Order order = new()
+        {
+            CreatedAt = DateTime.UtcNow,
+            BuyerUsername = username,
+            OrderStatusId = 1,
+            SallerUsername = null
+        };
+
+        try
+        {
+            _context.Orders.Add(order);
+            _context.SaveChanges();
+
+            var orderProducts = productsInOrder.Select(x => new OrderProduct
+            {
+                ProductId = x.ProductId,
+                OrderId = order.Id,
+                Count = x.Count
+            }).ToList();
+
+            _context.OrderProducts.AddRange(orderProducts);
+
+            _context.SaveChanges();
+
+            return Results.Created();
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                title: ex.Message,
+                detail: ex.InnerException?.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
+
+    }
+
+
+    [HttpPost("addAdmin")]
+    [Authorize(Roles = "admin")]
+    public async Task<IResult> CreateOrderForAdmin([FromBody] AddOrderDto addOrderDto)
     {
         var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -72,7 +157,7 @@ public class OrderController : ControllerBase
             CreatedAt = DateTime.UtcNow,
             BuyerUsername = addOrderDto.BuyerUsername,
             OrderStatusId = 1,
-            SallerUsername = username
+            SallerUsername = addOrderDto.SallerUsername
         };
 
 
@@ -97,10 +182,9 @@ public class OrderController : ControllerBase
         catch (Exception ex)
         {
             return Results.Problem(
-                type: ex.ToString(),
                 title: ex.Message,
                 detail: ex.InnerException?.Message,
-                statusCode: StatusCodes.Status400BadRequest
+                statusCode: StatusCodes.Status500InternalServerError
             );
         }
     }

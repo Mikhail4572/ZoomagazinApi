@@ -61,7 +61,6 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
-
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminOnly", x => x.RequireRole("admin"))
     .AddPolicy("UserOnly", x => x.RequireRole("user"));

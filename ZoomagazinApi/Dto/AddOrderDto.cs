@@ -7,16 +7,9 @@ public class AddOrderDto
     [JsonPropertyName("buyerUsername")]
     public string? BuyerUsername { get; set; }
 
+    [JsonPropertyName("sallerUsername")]
+    public string? SallerUsername { get; set; }
+
     [JsonPropertyName("productsInOrders")]
-    public List<ProductsInOrder> ProductsInOrders { get; set; }
-}
-
-
-public class ProductsInOrder
-{
-    [JsonPropertyName("productId")]
-    public int ProductId { get; set; }
-
-    [JsonPropertyName("count")]
-    public int Count { get; set; }
+    public List<ProductsInOrderDto> ProductsInOrders { get; set; }
 }

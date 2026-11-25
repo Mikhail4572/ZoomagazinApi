@@ -24,8 +24,46 @@ public class AuthController : ControllerBase
     //http://localhost:8080/api/Auth/check
     [HttpGet("check")]
     public async Task<IResult> Check()
-    {     
-        return Results.Ok();
+    {
+        if (!_context.OrderProducts.Any())
+        {
+            List<OrderStatus> statuses = 
+            [
+                new()
+                {
+                    Name = "Создан"
+                },
+                new()
+                {
+                    Name = "Отправлен"
+                },
+                new()
+                {
+                    Name = "Выдан"
+                },
+                new()
+                {
+                    Name = "Отменён"
+                }
+            ];
+
+            _context.OrderStatuses.AddRange(statuses);
+
+            if (!_context.Products.Any())
+            {
+                _context.Products.Add(new()
+                {
+                    Name = "Корм для шавок",
+                    Count = 1000,
+                    Discount = 0,
+                    Price = 100
+                });
+            }
+            _context.SaveChanges();
+        }
+
+        IEnumerable<Account> users = _context.Accounts.ToList();
+        return Results.Ok(users);
     }
 
     [HttpPost("reg")]
@@ -131,6 +169,7 @@ public class AuthController : ControllerBase
     [HttpGet("getUserByEmail/{email}")]
     public async Task<IResult> GetUserByEmail(string email)
     {
+     
         var user = _context.Accounts.FirstOrDefault(x => x.Email == email);
 
         return user is not null ? Results.Ok(new AccountAdminDto
