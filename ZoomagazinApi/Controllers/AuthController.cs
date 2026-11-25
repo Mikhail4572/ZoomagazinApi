@@ -74,7 +74,11 @@ public class AuthController : ControllerBase
 
             string token = _authService.GenerateJwtToken(account);
 
-            return Results.Ok(token);
+            return Results.Ok(new
+            {
+                token,
+                account.Role
+            });
         }
         catch (Exception ex)
         {
@@ -100,7 +104,11 @@ public class AuthController : ControllerBase
 
         string token = _authService.GenerateJwtToken(user);
 
-        return Results.Ok(token);
+        return Results.Ok(new 
+        {
+            token,
+            user.Role
+        });
     }
 
     [Authorize(Roles = "admin")]
