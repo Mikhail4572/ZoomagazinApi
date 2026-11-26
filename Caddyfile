@@ -1,0 +1,3 @@
+azovchan.ru {
+    reverse_proxy zoomagazinapi:8080
+}

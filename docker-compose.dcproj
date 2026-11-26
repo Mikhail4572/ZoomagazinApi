@@ -9,6 +9,7 @@
     <DockerServiceName>zoomagazinapi</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="Caddyfile" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>

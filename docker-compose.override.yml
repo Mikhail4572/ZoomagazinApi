@@ -2,13 +2,14 @@ services:
   zoomagazinapi:
     image: goydazov/zoocoolrep
     container_name: zooApi
-    depends_on: 
+    depends_on:
       - postgres_pipec
-    ports:
-      - "80:8080"
+    expose:
+      - "8080"
     build:
       context: ZoomagazinApi
       dockerfile: Dockerfile
+
   postgres_pipec:
     image: postgres:15
     container_name: postgres_pipec
@@ -21,5 +22,23 @@ services:
       - "5432"
     volumes:
       - postgres_pipec_data:/var/lib/postgresql/data
+
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - zoomagazinapi
+
 volumes:
   postgres_pipec_data:
+  caddy_data:
+  caddy_config:

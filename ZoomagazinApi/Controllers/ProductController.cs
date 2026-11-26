@@ -35,6 +35,7 @@ public class ProductController : ControllerBase
     [HttpGet("weeklyStatistics/{productid:int}")]
     public async Task<IResult> WeeklyStatistics(int productid)
     {
+
         var date = DateTime.UtcNow.Date.AddDays(-7);
 
         var statistics = _context.OrderProducts
